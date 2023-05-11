@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>fabrics_mirte</name>
+  <version>0.0.1</version>
+  <description>The fabrics_mirte package for ROS bridging fabrics and Mirte robot</description>
+  <maintainer email="casparvv52@gmail.com">caspar</maintainer>
+  <license>TODO</license>
+  <buildtool_depend>catkin</buildtool_depend>
+  <export>
+  </export>
+</package>

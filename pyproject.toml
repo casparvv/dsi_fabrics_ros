@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "fabrics-mirte"
+version = "0.1.0"
+description = "Bridging fabrics and Mirte robot with ROS"
+authors = ["Caspar van Venrooij <casparvv52@gmail.com>"]
+readme = "README.md"
+packages = [{include = "fabrics_mirte"}]
+
+[tool.poetry.dependencies]
+python = ">=3.8,<3.10"
+fabrics = {version = "^0.6.2", optional = false}
+rospkg = "*"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
