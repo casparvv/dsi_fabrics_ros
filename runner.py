@@ -13,25 +13,25 @@ class fabrics_runner():
                     "indices": [0, 1],
                     "parent_link" : 0,
                     "child_link" : 1,
-                    "desired_position": [5.0, 1.0],
+                    "desired_position": [-3.0, 0.0],
                     "epsilon" : 0.1,
                     "type": "staticSubGoal"
                 }
         }
         self._goal = GoalComposition(name="goal", content_dict=goal_dict)
         self._collision_links = [1]
-        # 195 for range 10, 93 for range 21,  49 for range 40
+        # 195 for range 10, 93 for range 21, 49 for range 40
         self._number_lidar_rays = 93
         self.startRosConverterNode()
 
     def initialize_runtime_arguments(self):
         self._runtime_arguments = {}
-        self._runtime_arguments['weight_goal_0'] = np.array([1.0])
+        self._runtime_arguments['weight_goal_0'] = np.array([0.5])
         self._runtime_arguments['base_inertia'] = np.array([0.4])
         for j in range(self._number_lidar_rays):
             for i in self._collision_links:
                 self._runtime_arguments[f'obst_geo_exp_obst_{j}_{i}_leaf'] = np.array([1.0])
-                self._runtime_arguments[f'obst_geo_lam_obst_{j}_{i}_leaf'] = np.array([5.0])
+                self._runtime_arguments[f'obst_geo_lam_obst_{j}_{i}_leaf'] = np.array([2.0])
                 self._runtime_arguments[f'radius_body_{i}'] = np.array([0.4])
     
     def startRosConverterNode(self):
@@ -51,12 +51,12 @@ class fabrics_runner():
         degrees_of_freedom = 2
         robot_type = "pointRobot"
         collision_geometry = "-20.0 / (x**1) * xdot**2"
-        collision_finsler = "1.0/(x**5) * (1 - ca.heaviside(xdot)) * xdot**2"
+        collision_finsler = "1.0 / (x**5) * (1 - ca.heaviside(xdot)) * xdot**2"
         planner = ParameterizedFabricPlanner(
                 degrees_of_freedom,
                 robot_type,
-                collision_geometry=collision_geometry,
-                collision_finsler=collision_finsler
+                #collision_geometry=collision_geometry,
+                #collision_finsler=collision_finsler
         )
         collision_links = [1]
         planner.set_components(

@@ -13,7 +13,6 @@ class ActionConverterNode(object):
         rospy.init_node("ActionConverter", anonymous=True)
         self._rate = rospy.Rate(rate_int)
         self._dt = dt
-
         self._n = 3
         self._nu = 2
         self._actionIndices = [0, 1]
@@ -57,6 +56,7 @@ class ActionConverterNode(object):
         return self.ob()
 
     def stopMotion(self):
+        # To do: test
         rospy.loginfo("Stopping ros converter")
         stop_msg = std_msgs.msg.Bool(data=False)
         for i in range(10):
