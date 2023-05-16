@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
-
 import rospy
 import numpy as np
-
 from geometry_msgs.msg import Pose2D, Twist
 import sensor_msgs.point_cloud2 as pc2
 from sensor_msgs.msg import JointState, PointCloud2
@@ -23,10 +21,6 @@ class ActionConverterNode(object):
         self._qdotIndices = [3, 4]
         self._joint_state_sub = rospy.Subscriber("/joint_states_filtered", JointState, self.joint_state_cb)
         self._point_cloud_sub = rospy.Subscriber("/scan_pointcloud", PointCloud2, self.point_cloud_cb)
-        #self._acc_pub = rospy.Publisher(
-        #    '/joint_acc_des',
-        #    Float64MultiArray, queue_size=100
-        #)
         self._vel_pub = rospy.Publisher(
                 '/cmd_vel',
                 Twist, queue_size=10
@@ -38,7 +32,6 @@ class ActionConverterNode(object):
         self._x = np.zeros(self._n)
         self._xdot = np.zeros(self._n)
         self._obstacles = np.zeros((3, 2))
-        #self._acc_msg = Float64MultiArray()
         self._vel_msg = Twist()
 
     def joint_state_cb(self, data):
@@ -56,10 +49,9 @@ class ActionConverterNode(object):
 
     def publishAction(self, action):
         self._vel_msg = Twist()
-        action = action*0.1
+        #action = action*0.1
         self._vel_msg.linear.x = action[0]
         self._vel_msg.linear.y = action[1]
-        print(action) 
         self._vel_pub.publish(self._vel_msg)
         self._rate.sleep()
         return self.ob()

@@ -1,29 +1,27 @@
 #!/usr/bin/env python3
-
 import numpy as np
 from mpscenes.goals.goal_composition import GoalComposition
 from fabrics.planner.parameterized_planner import ParameterizedFabricPlanner
 from ros.ros_converter_node import ActionConverterNode
 
-
 class fabrics_runner():
     def __init__(self):
-        # Definition of the goal.
         goal_dict = {
                 "subgoal0": {
-                    "weight": 0.5,
+                    "weight": 0.1,
                     "is_primary_goal": True,
                     "indices": [0, 1],
                     "parent_link" : 0,
                     "child_link" : 1,
-                    "desired_position": [5.0, 0.0],
+                    "desired_position": [5.0, 1.0],
                     "epsilon" : 0.1,
                     "type": "staticSubGoal"
                 }
         }
         self._goal = GoalComposition(name="goal", content_dict=goal_dict)
         self._collision_links = [1]
-        self._number_lidar_rays = 49
+        # 195 for range 10, 93 for range 21,  49 for range 40
+        self._number_lidar_rays = 93
         self.startRosConverterNode()
 
     def initialize_runtime_arguments(self):
@@ -43,27 +41,22 @@ class fabrics_runner():
    
     def applyAction(self, action):
         ob = self._rosConverter.publishAction(action)
-        #self._rosConverter.setGoal(self._goal)
         return ob 
 
     def reset(self):
         ob = self._rosConverter.ob()
-        #self._rosConverter.setGoal(self._goal)
         return ob
 
     def set_planner(self):
-        """
-        Initializes the fabric planner for the point robot.
-        """
         degrees_of_freedom = 2
         robot_type = "pointRobot"
-        #collision_geometry = "-2.0 / (x ** 1) * xdot ** 2"
-        #collision_finsler = "1.0/(x**2) * (1 - ca.heaviside(xdot))* xdot**2"
+        collision_geometry = "-20.0 / (x**1) * xdot**2"
+        collision_finsler = "1.0/(x**5) * (1 - ca.heaviside(xdot)) * xdot**2"
         planner = ParameterizedFabricPlanner(
                 degrees_of_freedom,
                 robot_type,
-                #collision_geometry=collision_geometry,
-                #collision_finsler=collision_finsler
+                collision_geometry=collision_geometry,
+                collision_finsler=collision_finsler
         )
         collision_links = [1]
         planner.set_components(
@@ -80,34 +73,19 @@ class fabrics_runner():
         self._runtime_arguments['q'] = ob[0]['x'][0:2]
         self._runtime_arguments['qdot'] = ob[0]['xdot'][0:2]
         self._runtime_arguments['x_goal_0'] = np.array(self._goal.primary_goal().position())
-        #ob_lidar = [[100, 100, 100],] * self._config.number_lidar_rays
+        #breakpoint()
         for j in range(self._number_lidar_rays):
             self._runtime_arguments[f'radius_obst_{j}'] = np.array([0.1])
             self._runtime_arguments[f'x_obst_{j}'] = ob[0]['obs'][j][0:2]
 
     def run(self, n_steps=100000):
-        """
-        Set the goal, the planner and run.
-        
-        Params
-        ----------
-        n_steps
-            Total number of simulation steps.
-        """
         self.set_planner()
-
-        action = np.array([0.0, 0.0, 0.0])
-        action = np.array([0.0, 0.0])
         ob = self.reset()
-        #ob = self.applyAction(np.zeros((3, 0)))
-
         for n_step in range(n_steps):
-            print(f" -  -  -  -  - Step {n_step} -  -  -  -  - ")
             self.adapt_runtime_arguments(ob)
             action = self._planner.compute_action(**self._runtime_arguments)
             ob = self.applyAction(action)
         return {}
-
 
 if __name__ == "__main__":
     fabrics_run = fabrics_runner()
