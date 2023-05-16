@@ -8,9 +8,6 @@ from ros.ros_converter_node import ActionConverterNode
 
 class fabrics_runner():
     def __init__(self):
-        pos0 = np.array([0.0, 0.0, 0.0])
-        vel0 = np.array([0.0, 0.0, 0.0])
-        
         # Definition of the goal.
         goal_dict = {
                 "subgoal0": {
@@ -19,14 +16,25 @@ class fabrics_runner():
                     "indices": [0, 1],
                     "parent_link" : 0,
                     "child_link" : 1,
-                    "desired_position": [3.5, 0.5],
+                    "desired_position": [5.0, 0.0],
                     "epsilon" : 0.1,
                     "type": "staticSubGoal"
                 }
         }
         self._goal = GoalComposition(name="goal", content_dict=goal_dict)
-        self._number_lidar_rays = 1
+        self._collision_links = [1]
+        self._number_lidar_rays = 49
         self.startRosConverterNode()
+
+    def initialize_runtime_arguments(self):
+        self._runtime_arguments = {}
+        self._runtime_arguments['weight_goal_0'] = np.array([1.0])
+        self._runtime_arguments['base_inertia'] = np.array([0.4])
+        for j in range(self._number_lidar_rays):
+            for i in self._collision_links:
+                self._runtime_arguments[f'obst_geo_exp_obst_{j}_{i}_leaf'] = np.array([1.0])
+                self._runtime_arguments[f'obst_geo_lam_obst_{j}_{i}_leaf'] = np.array([5.0])
+                self._runtime_arguments[f'radius_body_{i}'] = np.array([0.4])
     
     def startRosConverterNode(self):
         dt = 0.1
@@ -46,12 +54,6 @@ class fabrics_runner():
     def set_planner(self):
         """
         Initializes the fabric planner for the point robot.
-
-        This function defines the forward kinematics for collision avoidance,
-        and goal reaching. These components are fed into the fabrics planner.
-
-        In the top section of this function, an example for optional reconfiguration
-        can be found. Commented by default.
         """
         degrees_of_freedom = 2
         robot_type = "pointRobot"
@@ -69,11 +71,21 @@ class fabrics_runner():
             goal=self._goal,
             number_obstacles=self._number_lidar_rays,
         )
-        planner.concretize(mode='vel', time_step=0.01)
+        planner.concretize()
+        self.initialize_runtime_arguments()
         print(f"Planner is concretized: {planner}")
         self._planner = planner
 
-    def run(self, n_steps=10000):
+    def adapt_runtime_arguments(self, ob):
+        self._runtime_arguments['q'] = ob[0]['x'][0:2]
+        self._runtime_arguments['qdot'] = ob[0]['xdot'][0:2]
+        self._runtime_arguments['x_goal_0'] = np.array(self._goal.primary_goal().position())
+        #ob_lidar = [[100, 100, 100],] * self._config.number_lidar_rays
+        for j in range(self._number_lidar_rays):
+            self._runtime_arguments[f'radius_obst_{j}'] = np.array([0.1])
+            self._runtime_arguments[f'x_obst_{j}'] = ob[0]['obs'][j][0:2]
+
+    def run(self, n_steps=100000):
         """
         Set the goal, the planner and run.
         
@@ -85,20 +97,14 @@ class fabrics_runner():
         self.set_planner()
 
         action = np.array([0.0, 0.0, 0.0])
+        action = np.array([0.0, 0.0])
         ob = self.reset()
         #ob = self.applyAction(np.zeros((3, 0)))
 
-        for _ in range(n_steps):
-            ob_robot = ob
-            action[0:2] = self._planner.compute_action(
-                q=ob_robot["joint_state"]["position"][0:2],
-                qdot=ob_robot["joint_state"]["velocity"][0:2],
-                x_goal_0=ob_robot['FullSensor']['goals'][0][0][0:2],
-                weight_goal_0=goal.sub_goals()[0].weight(),
-                x_obst_0=ob_robot['FullSensor']['obstacles'][0][0][0:2],
-                radius_obst_0=ob_robot['FullSensor']['obstacles'][0][1],
-                radius_body_1=np.array([0.2])
-            )
+        for n_step in range(n_steps):
+            print(f" -  -  -  -  - Step {n_step} -  -  -  -  - ")
+            self.adapt_runtime_arguments(ob)
+            action = self._planner.compute_action(**self._runtime_arguments)
             ob = self.applyAction(action)
         return {}
 
