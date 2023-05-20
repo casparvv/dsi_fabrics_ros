@@ -5,6 +5,7 @@ from geometry_msgs.msg import Pose2D, Twist
 import sensor_msgs.point_cloud2 as pc2
 from sensor_msgs.msg import JointState, PointCloud2
 from std_msgs.msg import Float64MultiArray, Bool
+from nav_msgs.msg import Odometry
 from visualization_msgs.msg import Marker, MarkerArray
 import std_msgs
 
@@ -19,6 +20,7 @@ class ActionConverterNode(object):
         self._stateIndices = [0, 1, 2]
         self._qdotIndices = [3, 4]
         self._joint_state_sub = rospy.Subscriber("/joint_states_filtered", JointState, self.joint_state_cb)
+        self._odom_sub = rospy.Subscriber("/odrive/odom", Odometry, self.odometry_cb)
         self._point_cloud_sub = rospy.Subscriber("/scan_pointcloud", PointCloud2, self.point_cloud_cb)
         self._vel_pub = rospy.Publisher(
                 '/cmd_vel',
@@ -30,12 +32,20 @@ class ActionConverterNode(object):
         )
         self._x = np.zeros(self._n)
         self._xdot = np.zeros(self._n)
+        #self._xdot = np.array([0.1, 0.1])
         self._obstacles = np.zeros((3, 2))
         self._vel_msg = Twist()
 
     def joint_state_cb(self, data):
         self._x = np.array([data.position[i] for i in self._stateIndices])
         self._xdot = np.array([data.velocity[i] for i in self._stateIndices])
+
+    def odometry_cb(self, data):
+        position = data.pose.pose.position
+        x = position.x
+        y = position.y
+        #self._x = np.array([x, y])
+        #self._xdot = np.array([data.velocity[i] for i in self._stateIndices])
 
     def point_cloud_cb(self, data):
         point_array = pc2.read_points(data, field_names=("x", "y", "z"), skip_nans=True)
