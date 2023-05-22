@@ -1,7 +1,7 @@
 # DSI Fabrics ROS
 Repository for real-world robot experiments using Direct Sensor Integrated (DSI) Optimization Fabrics via ROS
 
-## Connect to robot (Mirte)
+## Connect to robot
 1. Connect to robot WiFi
 2. SSH into robot
 ```
@@ -11,7 +11,7 @@ ssh mirte@192.168.42.1
 ## Robot side
 - Start up the drivers, calibrate the motors, spin up the LiDAR sensor and processor
 ```
-roslaunch lidar_processor mirte.launch
+roslaunch lidar_processor robot.launch
 ```
 
 <details>
@@ -82,12 +82,15 @@ sudo vim /etc/systemd/timesyncd.conf
 ```
 sudo apt-get install ntp
 ```
-- Move files or directory from PC to Mirte:
+- Move files or directory from PC to robot:
 ```
 scp Develop/catkin_ws/src/lidar_processor/src/lidar_processor.cpp mirte@192.168.42.1:~/catkin_lidar/src/lidar_processor/src
 scp -r Desktop/navigation mirte@192.168.42.1:~/catkin_lidar/src/
 ```
-- Charging Mirte robot
-1.
-2.
-3.
+
+## To do
+- [ ] Tune fabrics
+- [ ] Improve localization
+- [ ] Add charging info
+- [ ] Add robot side code
+- [ ] Add amcl_starter code
