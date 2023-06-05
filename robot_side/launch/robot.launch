@@ -1,0 +1,13 @@
+<launch>
+  <!-- launch the odrive driver -->
+  <include file="$(find odrive_ros)/launch/odrive.launch"/>
+  <!-- chmod the lidar, connet to the driver and calibrate the motors -->
+  <node name="service_caller" pkg="lidar_processor" type="service_caller.py"/>
+  <!-- spin up the lidar -->
+  <include file="$(find rplidar_ros)/launch/rplidar.launch"/>
+  <!-- Run laser_scan_processor.py -->
+  <node name="laser_scan_processor" pkg="lidar_processor" type="laser_scan_processor.py"/>
+  <!-- Static transform publisher between base link and laser -->
+  <node pkg="tf" type="static_transform_publisher" name="base_link_to_laser" 
+    args="-0.13 0.0 0.0 0.0 0.0 0.0 /base_link /laser 100"/>
+</launch>

@@ -1,0 +1,10 @@
+<launch>
+  <node pkg="joy" type="joy_node" name="joy_node"/>
+  <node pkg="teleop_twist_joy" type="teleop_node" name="teleop_twist_joy">
+    <param name="enable_button" value="0"/>
+    <param name="axis_linear" value="1"/>
+    <param name="scale_linear" value="0.5"/>
+    <param name="axis_angular" value="0"/>
+    <param name="scale_angular" value="0.5"/>
+  </node>
+</launch>

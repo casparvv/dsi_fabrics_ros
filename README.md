@@ -15,7 +15,7 @@ roslaunch lidar_processor robot.launch
 ```
 
 <details>
-<summary>Does all of this:</summary>
+<summary>robot.launch does the following:</summary>
 
 ```
 roslaunch odrive_ros odrive.launch
@@ -32,7 +32,7 @@ rosrun lidar_processor laser_scan_processor.py
 
 ## PC side
 ```
-export ROS_IP=192.168.42.95
+export ROS_IP=`pc_ip`
 export ROS_MASTER_URI=http://192.168.42.1:11311
 ```
 
@@ -84,13 +84,9 @@ sudo apt-get install ntp
 ```
 - Move files or directory from PC to robot:
 ```
-scp Develop/catkin_ws/src/lidar_processor/src/lidar_processor.cpp mirte@192.168.42.1:~/catkin_lidar/src/lidar_processor/src
-scp -r Desktop/navigation mirte@192.168.42.1:~/catkin_lidar/src/
+scp directory/file.cpp mirte@192.168.42.1:~/directory
+scp -r directory mirte@192.168.42.1:~/directory/
+scp mirte@192.168.42.1:~/directory/file.py .
+scp -r mirte@192.168.42.1:~/directory .
 ```
 
-## To do
-- [ ] Tune fabrics
-- [ ] Improve localization
-- [ ] Add charging info
-- [ ] Add robot side code
-- [ ] Add amcl_starter code
